@@ -1,0 +1,17 @@
+<resources>
+    <dimen name="margin">8dp</dimen>
+    <dimen name="margin_half">4dp</dimen>
+    <dimen name="padding">8dp</dimen>
+    <dimen name="padding_half">4dp</dimen>
+    <dimen name="fab_margin">16dp</dimen>
+    <dimen name="app_bar_height_extended">180dp</dimen>
+    <dimen name="profile_image_edge">65dp</dimen>
+    <dimen name="divider">1dp</dimen>
+    <dimen name="app_bar_height">180dp</dimen>
+    <dimen name="text_margin">16dp</dimen>
+	<dimen name="activity_horizontal_margin">16dp</dimen>
+    <dimen name="activity_vertical_margin">16dp</dimen>
+    <dimen name="nav_header_vertical_spacing">8dp</dimen>
+    <dimen name="nav_header_height">176dp</dimen>
+
+</resources>

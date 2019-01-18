@@ -1,0 +1,33 @@
+<?xml version="1.0" encoding="utf-8"?>
+<menu xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools"
+    tools:showIn="navigation_view">
+
+
+    <item
+        android:id="@+id/pubmenuitem"
+        android:icon="@android:drawable/btn_star_big_on"
+        android:title="Pubs" />
+    <item
+        android:icon="@drawable/ic_menu_manage"
+        android:title="Settings" />
+    <item
+        android:id="@+id/profmenuitem"
+        android:icon="@drawable/ic_menu_gallery"
+        android:title="Profile" />
+    <item
+        android:id="@+id/menuPictures"
+        android:icon="@drawable/ic_menu_camera"
+        android:title="Pictures" />
+    <item
+        android:id="@+id/fb_placeholder"
+        android:icon="@drawable/com_facebook_button_login_logo"
+        android:title="Facebook Photos" />
+    <item
+        android:id="@+id/logout_btn"
+        android:icon="@android:drawable/ic_lock_power_off"
+        android:title="Logout" />
+    <item
+        android:id="@+id/qrbutton"
+        android:title="QR Scan" />
+</menu>
