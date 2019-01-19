@@ -29,6 +29,7 @@ import androidx.viewpager.widget.PagerAdapter;
 import androidx.viewpager.widget.ViewPager;
 import butterknife.BindView;
 import butterknife.ButterKnife;
+import butterknife.OnClick;
 
 import static com.arbiter.droid.icebreakerprot1.Common.getCurrentUser;
 import static com.arbiter.droid.icebreakerprot1.Common.getDatabaseReference;
@@ -43,6 +44,34 @@ public class ViewProfileActivity extends AppCompatActivity {
     TextView mUserNameText;
     @BindView(R.id.button_facebook) ImageButton facebookBtn;
     @BindView(R.id.button_addimg) ImageButton addImg;
+    @BindView(R.id.fabPingAccept) FloatingActionButton pingAcceptBtn;
+    @BindView(R.id.fabPingReject) FloatingActionButton pingRejectBtn;
+    @BindView(R.id.fab_ping) FloatingActionButton pingBtn;
+    @BindView(R.id.fabChat) FloatingActionButton chatBtn;
+    @OnClick(R.id.fabPingAccept)
+    public void acceptPing(){
+        String pingNode = getIntent().getStringExtra("pingnode");
+        getDatabaseReference().child("pings").child(pingNode).child("accepted").setValue("yes");
+        pingAcceptBtn.setVisibility(View.GONE);
+        pingRejectBtn.setVisibility(View.GONE);
+        chatBtn.setVisibility(View.VISIBLE);
+    }
+    @OnClick(R.id.fabPingReject)
+    public void rejectPing(){
+        String pingNode = getIntent().getStringExtra("pingnode");
+        getDatabaseReference().child("pings").child(pingNode).removeValue();
+        pingAcceptBtn.setVisibility(View.GONE);
+        pingRejectBtn.setVisibility(View.GONE);
+        pingBtn.setVisibility(View.VISIBLE);
+    }
+    @OnClick(R.id.fabChat)
+    public void startChatActivity(){
+        Intent i = new Intent(getApplicationContext(),ChatActivity.class);
+        i.putExtra("venname",getIntent().getStringExtra("name"));
+        i.putExtra("groupChat","no");
+        i.putExtra("sender",getCurrentUser());
+        startActivity(i);
+    }
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -50,6 +79,17 @@ public class ViewProfileActivity extends AppCompatActivity {
         Toolbar toolbar = findViewById(R.id.toolbar);
         setSupportActionBar(toolbar);
         ButterKnife.bind(this);
+        if(getIntent().hasExtra("friend")){
+            chatBtn.setVisibility(View.VISIBLE);
+            pingBtn.setVisibility(View.GONE);
+        }
+        if(getIntent().hasExtra("pingnode"))
+        {
+            pingAcceptBtn.setVisibility(View.VISIBLE);
+            pingRejectBtn.setVisibility(View.VISIBLE);
+            pingBtn.setVisibility(View.GONE);
+
+        }
         facebookBtn.setVisibility(View.GONE);
         addImg.setVisibility(View.GONE);
         AndroidThreeTen.init(this);

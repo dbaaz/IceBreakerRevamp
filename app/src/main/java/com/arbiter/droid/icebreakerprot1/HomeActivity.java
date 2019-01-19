@@ -1,6 +1,8 @@
 package com.arbiter.droid.icebreakerprot1;
 import android.content.Intent;
 import android.os.Bundle;
+import android.os.Handler;
+import android.view.KeyEvent;
 import android.view.MenuItem;
 import android.widget.Toast;
 
@@ -15,6 +17,8 @@ import org.greenrobot.eventbus.EventBus;
 import androidx.annotation.NonNull;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.appcompat.widget.Toolbar;
+import androidx.core.view.GravityCompat;
+import androidx.drawerlayout.widget.DrawerLayout;
 import androidx.fragment.app.Fragment;
 
 import static com.arbiter.droid.icebreakerprot1.Common.getCurrentUser;
@@ -27,7 +31,7 @@ public class HomeActivity extends AppCompatActivity {
 
     private Toolbar mToolbarMain;
     private BottomNavigationView mBottomNavigationView;
-
+    boolean doubleBackToExitPressedOnce = false;
     private BottomNavigationView.OnNavigationItemSelectedListener mOnNavigationItemSelectedListener
             = new BottomNavigationView.OnNavigationItemSelectedListener() {
 
@@ -108,7 +112,28 @@ public class HomeActivity extends AppCompatActivity {
         }
         return false;
     }
+    @Override
+    public void onBackPressed() {
+        /*DrawerLayout drawer = (DrawerLayout) findViewById(R.id.drawer_layout);
+        if (drawer.isDrawerOpen(GravityCompat.START)) {
+            drawer.closeDrawer(GravityCompat.START);
+        }*/
+        if (doubleBackToExitPressedOnce) {
+            super.onBackPressed();
+            return;
+        }
 
+        this.doubleBackToExitPressedOnce = true;
+        Toast.makeText(this, "Please click BACK again to exit", Toast.LENGTH_SHORT).show();
+
+        new Handler().postDelayed(new Runnable() {
+
+            @Override
+            public void run() {
+                doubleBackToExitPressedOnce=false;
+            }
+        }, 2000);
+    }
     private void changeTitle(int stringResource) {
         mToolbarMain.setTitle(stringResource);
     }

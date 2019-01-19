@@ -11,6 +11,9 @@ import android.widget.ImageButton;
 import android.widget.TextView;
 import android.widget.Toast;
 
+import com.facebook.AccessToken;
+import com.google.android.material.floatingactionbutton.FloatingActionButton;
+import com.google.android.material.snackbar.Snackbar;
 import com.google.firebase.database.DataSnapshot;
 import com.google.firebase.database.DatabaseError;
 import com.google.firebase.database.ValueEventListener;
@@ -43,8 +46,15 @@ public class ProfileFragment extends Fragment {
     }
     @OnClick(R.id.button_facebook)
     public void startFacebookImageActivity(){
-        startActivity(new Intent(getContext(), FacebookAlbumListActivity.class));
+        try {
+            AccessToken.getCurrentAccessToken().toString();
+            startActivity(new Intent(getContext(), FacebookAlbumListActivity.class));
+        }catch (Exception e){
+            Snackbar.make(getView(),"You need to be logged into Facebook to access this feature",Snackbar.LENGTH_SHORT).show();
+        }
     }
+    @BindView(R.id.fabPingAccept) FloatingActionButton pingAcceptBtn;
+    @BindView(R.id.fabPingReject) FloatingActionButton pingRejectBtn;
     @Nullable
     @Override
     public View onCreateView(@NonNull LayoutInflater inflater, @Nullable ViewGroup container, @Nullable Bundle savedInstanceState) {

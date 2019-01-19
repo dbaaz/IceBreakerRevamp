@@ -10,6 +10,7 @@ import android.widget.ImageView;
 import android.widget.TextView;
 
 import com.bumptech.glide.load.DataSource;
+import com.bumptech.glide.load.engine.DiskCacheStrategy;
 import com.bumptech.glide.load.engine.GlideException;
 import com.bumptech.glide.request.RequestListener;
 import com.bumptech.glide.request.RequestOptions;
@@ -67,7 +68,7 @@ public class UsersViewAdapter extends RecyclerView.Adapter<RecyclerView.ViewHold
             Shimmer shimmer = new Shimmer.AlphaHighlightBuilder().build();
             ShimmerDrawable shimmerDrawable = new ShimmerDrawable();
             shimmerDrawable.setShimmer(shimmer);
-            GlideApp.with(mContext).load(model.getImageUrl()).listener(new RequestListener<Drawable>() {
+            GlideApp.with(mContext).load(model.getImageUrl()).thumbnail(0.2f).diskCacheStrategy(DiskCacheStrategy.RESOURCE).listener(new RequestListener<Drawable>() {
                 @Override
                 public boolean onLoadFailed(@Nullable GlideException e, Object model, Target<Drawable> target, boolean isFirstResource) {
                     return false;

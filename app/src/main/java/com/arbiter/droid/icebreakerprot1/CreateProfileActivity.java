@@ -5,6 +5,7 @@ import android.content.Intent;
 import android.graphics.Bitmap;
 import android.graphics.drawable.BitmapDrawable;
 import android.net.Uri;
+import android.opengl.Visibility;
 import android.os.Bundle;
 import android.view.Menu;
 import android.view.MenuItem;
@@ -14,6 +15,7 @@ import android.widget.EditText;
 import android.widget.ImageView;
 import android.widget.ScrollView;
 import android.widget.Spinner;
+import android.widget.TextView;
 import android.widget.Toast;
 
 import com.bumptech.glide.request.RequestOptions;
@@ -38,6 +40,8 @@ import com.google.firebase.storage.FirebaseStorage;
 import com.google.firebase.storage.StorageReference;
 import com.yalantis.ucrop.UCrop;
 
+import org.greenrobot.eventbus.EventBus;
+import org.greenrobot.eventbus.Subscribe;
 import org.json.JSONException;
 import org.json.JSONObject;
 
@@ -46,12 +50,15 @@ import java.io.FileOutputStream;
 import java.io.IOException;
 import java.text.SimpleDateFormat;
 import java.util.Calendar;
+import java.util.List;
 import java.util.Locale;
 
 import androidx.annotation.NonNull;
 import androidx.appcompat.app.AppCompatActivity;
+import androidx.appcompat.view.menu.ActionMenuItemView;
 import androidx.appcompat.widget.Toolbar;
 import butterknife.BindView;
+import butterknife.BindViews;
 import butterknife.ButterKnife;
 import butterknife.OnClick;
 import butterknife.OnItemClick;
@@ -71,12 +78,34 @@ public class CreateProfileActivity extends AppCompatActivity {
     ImageView imgview;
     String uid;
     @BindView(R.id.scrollview_createprof) ScrollView createProfileScrollView;
-
+    @BindViews({R.id.name_textedit,R.id.spinner2,R.id.dobinput,R.id.spinner3,R.id.imageView,R.id.biotextview}) List<View> defaultViews;
+    @BindViews({R.id.progressCircle,R.id.progressText}) List<View> progressViews;
+    @BindView(R.id.progressText) TextView progressText;
     EditText nametxt;
     Spinner gender;
     EditText dobinput;
     TextInputLayout bioTextInput;
     Spinner interested;
+    void setformVisibility(int visibility){
+        for(View view : defaultViews)
+            view.setVisibility(visibility);
+    }
+    void setProgressVisibility(int visibility){
+        for(View view : progressViews)
+            view.setVisibility(visibility);
+    }
+    @Subscribe
+    public void uploadComplete(AvatarUploadCompleteEvent event){
+        getDatabaseReference().child("users").child(uid).child("gender").setValue(gender.getSelectedItem().toString());
+        getDatabaseReference().child("users").child(uid).child("name").setValue(nametxt.getText().toString());
+        getDatabaseReference().child("users").child(uid).child("dob").setValue(dobinput.getText().toString());
+        getDatabaseReference().child("users").child(uid).child("interested").setValue(interested.getSelectedItem().toString());
+        getDatabaseReference().child("users").child(uid).child("bio").setValue(bioTextInput.getEditText().getText().toString());
+        setUser(nametxt.getText().toString(), gender.getSelectedItem().toString(), dobinput.getText().toString(), interested.getSelectedItem().toString());
+        if(!getIntent().hasExtra("editmode"))
+            startActivity(i);
+        finish();
+    }
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -84,6 +113,8 @@ public class CreateProfileActivity extends AppCompatActivity {
         Toolbar toolbar = findViewById(R.id.toolbar);
         setSupportActionBar(toolbar);
         ButterKnife.bind(this);
+        setProgressVisibility(View.VISIBLE);
+        EventBus.getDefault().register(this);
         bioTextInput = findViewById(R.id.biotextview);
         nametxt = findViewById(R.id.name_textedit);
         gender = findViewById(R.id.spinner2);
@@ -97,7 +128,7 @@ public class CreateProfileActivity extends AppCompatActivity {
         i = new Intent(this, HomeActivity.class);
         if(getIntent().hasExtra("editmode"))
         {
-            createProfileScrollView.setVisibility(View.VISIBLE);
+            setProgressVisibility(View.GONE);
             setTitle("Edit Profile");
             //btn.setText("Save");
             uid=getPreference("saved_uid");
@@ -148,6 +179,9 @@ public class CreateProfileActivity extends AppCompatActivity {
         }
         else {
             //final FirebaseUser acc = getIntent().getBundleExtra("accdetailbundle").getParcelable("accdet");
+            setformVisibility(View.GONE);
+            setProgressVisibility(View.VISIBLE);
+            progressText.setText("Checking for existing profile");
             FirebaseUser acc = FirebaseAuth.getInstance().getCurrentUser();
             try {
                 Shimmer shimmer = new Shimmer.ColorHighlightBuilder().build();
@@ -171,8 +205,10 @@ public class CreateProfileActivity extends AppCompatActivity {
                             Toast.makeText(CreateProfileActivity.this, "Welcome back "+getPreference("saved_name"), Toast.LENGTH_SHORT).show();
                             finish();
                         }
-                        else
-                            createProfileScrollView.setVisibility(View.VISIBLE);
+                        else {
+                            setProgressVisibility(View.GONE);
+                            setformVisibility(View.VISIBLE);
+                        }
                     }
 
                     @Override
@@ -318,11 +354,10 @@ public class CreateProfileActivity extends AppCompatActivity {
             case R.id.edit_menu_save:
                 if(!nametxt.getText().toString().trim().equals("")&&!dobinput.getText().toString().trim().equals("")&&gender.getSelectedItemPosition()!=0&&interested.getSelectedItemPosition()!=0&&bioTextInput.getEditText().getText().toString().trim().length()!=0)
                 {
-                    getDatabaseReference().child("users").child(uid).child("gender").setValue(gender.getSelectedItem().toString());
-                    getDatabaseReference().child("users").child(uid).child("name").setValue(nametxt.getText().toString());
-                    getDatabaseReference().child("users").child(uid).child("dob").setValue(dobinput.getText().toString());
-                    getDatabaseReference().child("users").child(uid).child("interested").setValue(interested.getSelectedItem().toString());
-                    getDatabaseReference().child("users").child(uid).child("bio").setValue(bioTextInput.getEditText().getText().toString());
+                    setformVisibility(View.GONE);
+                    setProgressVisibility(View.VISIBLE);
+                    progressText.setText("Saving");
+                    findViewById(R.id.edit_menu_save).setEnabled(false);
                     try {
                         Bitmap bitmap = ((BitmapDrawable) imgview.getDrawable()).getBitmap();
                         File tmp = new File(getCacheDir() + "temp.jpeg");
@@ -331,12 +366,12 @@ public class CreateProfileActivity extends AppCompatActivity {
                         ostream.close();
                         if(!nametxt.getText().toString().equals(""))
                             setCurrentUser(nametxt.getText().toString());
+                        setPreference("saved_uid",uid);
                         uploadAvatarImage("/prof_img/" + nametxt.getText().toString(), compressImage(tmp, getApplicationContext(), true));
                     } catch (Exception e) {
                     }
-                    setUser(nametxt.getText().toString(), gender.getSelectedItem().toString(), dobinput.getText().toString(), interested.getSelectedItem().toString());
-                    startActivity(i);
-                    finish();
+                    if(getIntent().hasExtra("editmode"))
+                        EventBus.getDefault().post(new AvatarUploadCompleteEvent());
                     return true;
                 }
                 else

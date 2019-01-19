@@ -18,9 +18,10 @@ public class SocialPagerAdapter extends FragmentStatePagerAdapter {
         switch (i) {
             case 0:
                 user_viewer_mode=2;
-                return new UsersViewFragment().newInstance();
+                return new PingViewFragment().newInstance();
             case 1:
-                return new FriendsFragment();
+                user_viewer_mode=3;
+                return new FriendsViewFragment().newInstance();
         }
         return null;
     }

@@ -39,10 +39,13 @@ public class Common {
 
     private static StorageReference storageReference = FirebaseStorage.getInstance().getReference();
     private static DatabaseReference databaseReference = FirebaseDatabase.getInstance().getReference();
+    private static Map<String,Boolean> globalCheckboxState = new HashMap<>();
     private static String current_user="";
     private static SharedPreferences sharedPreferences;
     static int image_viewer_mode=0;
     static int user_viewer_mode=0;
+    public static void setHashMap(Map<String,Boolean> tmp){globalCheckboxState=tmp;}
+    public static Map<String,Boolean> getHashMap(){return globalCheckboxState;}
     public static final String DATA = "0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZqwertyuiopasdfghjklzxcvbnm";
     public static Random RANDOM = new Random();
     public static void removeValueEventListener(HashMap<DatabaseReference, ValueEventListener> hashMap) {
@@ -108,6 +111,7 @@ public class Common {
                     @Override
                     public void onSuccess(Uri uri) {
                         tmp.setValue(uri.toString());
+                        EventBus.getDefault().post(new AvatarUploadCompleteEvent());
                     }
                 });
             }

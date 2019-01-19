@@ -9,8 +9,12 @@ import android.widget.Button;
 
 import com.google.android.material.bottomsheet.BottomSheetDialogFragment;
 
+import org.greenrobot.eventbus.EventBus;
+
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
@@ -21,7 +25,7 @@ public class BottomSheetFragment extends BottomSheetDialogFragment {
     private Button mApplyFilterButton;
 
     private RecyclerView mRecyclerFiltersView;
-    private RecyclerView.Adapter mFiltersViewAdapter;
+    private BottomSheetFiltersViewAdapter mFiltersViewAdapter;
     private RecyclerView.LayoutManager mFiltersViewLayoutManager;
 
     public BottomSheetFragment() {
@@ -45,6 +49,8 @@ public class BottomSheetFragment extends BottomSheetDialogFragment {
         mApplyFilterButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
+                Map<String,Boolean> filterState = new HashMap<>();
+                EventBus.getDefault().post(new FilterUpdateEvent(mFiltersViewAdapter.getCheckboxStates()));
                 dismiss();
             }
         });

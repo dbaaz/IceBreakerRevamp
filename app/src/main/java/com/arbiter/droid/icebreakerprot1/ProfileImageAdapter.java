@@ -8,6 +8,8 @@ import android.widget.ImageView;
 import android.widget.LinearLayout;
 
 
+import com.bumptech.glide.load.engine.DiskCacheStrategy;
+
 import androidx.viewpager.widget.PagerAdapter;
 
 
@@ -48,7 +50,7 @@ public class ProfileImageAdapter extends PagerAdapter {
 
         ImageView imageView = (ImageView) itemView.findViewById(R.id.imageView);
         //imageView.setImageResource(mImageList[position]);
-        GlideApp.with(imageView).load(mImageList[position]).into(imageView);
+        GlideApp.with(imageView).load(mImageList[position]).thumbnail(0.2f).diskCacheStrategy(DiskCacheStrategy.RESOURCE).into(imageView);
         container.addView(itemView);
 
         return itemView;

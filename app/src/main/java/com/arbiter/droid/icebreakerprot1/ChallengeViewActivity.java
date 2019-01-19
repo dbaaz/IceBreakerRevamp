@@ -5,6 +5,7 @@ import android.view.View;
 import android.widget.Button;
 import android.widget.ImageView;
 import android.widget.TextView;
+import androidx.appcompat.widget.Toolbar;
 
 import com.google.firebase.database.DataSnapshot;
 import com.google.firebase.database.DatabaseError;
@@ -29,6 +30,7 @@ public class ChallengeViewActivity extends AppCompatActivity {
     @BindViews({R.id.button3,R.id.button6,R.id.button4}) List<Button> buttons;
     @BindViews({R.id.imageView2,R.id.imageView3}) List<ImageView> imageViews;
     @BindView(R.id.imageView4) ImageView challengeIcon;
+    @BindView(R.id.toolbar7) Toolbar toolbar;
     String challengenode;
     @Override
     protected void onStart(){
@@ -57,6 +59,7 @@ public class ChallengeViewActivity extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_challenge_view);
         ButterKnife.bind(this);
+        toolbar.setTitleTextColor(getResources().getColor(R.color.white));
         for(ImageView imageView:imageViews){
             imageView.getLayoutParams().height= (int) (getScreenWidth()/2.4F);
             imageView.getLayoutParams().width= (int) (getScreenWidth()/2.4F);
