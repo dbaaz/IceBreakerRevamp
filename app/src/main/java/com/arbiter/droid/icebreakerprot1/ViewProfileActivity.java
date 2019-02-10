@@ -116,6 +116,7 @@ public class ViewProfileActivity extends AppCompatActivity {
                 }
                 mProfileImagePager = findViewById(R.id.pager_profile_images);
                 mProfileImageAdapter.setImageList(url_array);
+                mProfileImageAdapter.setUid(uid);
                 mProfileImagePager.setAdapter(mProfileImageAdapter);
                 TextView age = findViewById(R.id.text_age);
                 TextView bioTextView = findViewById(R.id.text_bio);

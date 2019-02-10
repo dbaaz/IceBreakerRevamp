@@ -101,6 +101,9 @@ public class CreateProfileActivity extends AppCompatActivity {
         getDatabaseReference().child("users").child(uid).child("dob").setValue(dobinput.getText().toString());
         getDatabaseReference().child("users").child(uid).child("interested").setValue(interested.getSelectedItem().toString());
         getDatabaseReference().child("users").child(uid).child("bio").setValue(bioTextInput.getEditText().getText().toString());
+        getDatabaseReference().child("users").child(uid).child("location").child("latitude").setValue("");
+        getDatabaseReference().child("users").child(uid).child("location").child("longitude").setValue("");
+        getDatabaseReference().child("users").child(uid).child("location").child("timestamp").setValue("");
         setUser(nametxt.getText().toString(), gender.getSelectedItem().toString(), dobinput.getText().toString(), interested.getSelectedItem().toString());
         if(!getIntent().hasExtra("editmode"))
             startActivity(i);

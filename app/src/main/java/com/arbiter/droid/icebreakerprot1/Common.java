@@ -36,12 +36,13 @@ import androidx.annotation.NonNull;
 import id.zelory.compressor.Compressor;
 
 public class Common {
-
+    private static Map<String,Integer> itemMap = new HashMap<>();
     private static StorageReference storageReference = FirebaseStorage.getInstance().getReference();
     private static DatabaseReference databaseReference = FirebaseDatabase.getInstance().getReference();
     private static Map<String,Boolean> globalCheckboxState = new HashMap<>();
     private static String current_user="";
     private static SharedPreferences sharedPreferences;
+    static double curr_user_lat=0,curr_user_long=0;
     static int image_viewer_mode=0;
     static int user_viewer_mode=0;
     public static void setHashMap(Map<String,Boolean> tmp){globalCheckboxState=tmp;}
@@ -54,6 +55,24 @@ public class Common {
             ValueEventListener valueEventListener = entry.getValue();
             databaseReference.removeEventListener(valueEventListener);
         }
+    }
+    public static Map<String,Integer> getItemMap(){
+        return itemMap;
+    }
+    public static void clearItemMap(){
+        itemMap.clear();
+    }
+    public static void setItem(String itemName, int count){
+        itemMap.put(itemName,count);
+    }
+    public static void removeItem(String itemName){
+        itemMap.remove(itemName);
+    }
+    public static double getCoordDistance(double latitude1, double longitude1, double latitude2, double longitude2)
+    {
+        return 6371 * Math.acos(
+                Math.sin(latitude1) * Math.sin(latitude2)
+                        + Math.cos(latitude1) * Math.cos(latitude2) * Math.cos(longitude2 - longitude1));
     }
     public static void setDefaultPreferences(SharedPreferences sharedPreferences) {
         Common.sharedPreferences = sharedPreferences;

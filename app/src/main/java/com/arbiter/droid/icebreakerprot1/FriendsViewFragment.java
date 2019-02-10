@@ -3,6 +3,7 @@ package com.arbiter.droid.icebreakerprot1;
 
 import android.content.Intent;
 import android.os.Bundle;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -142,44 +143,51 @@ public class FriendsViewFragment extends Fragment {
             childr.addValueEventListener(new ValueEventListener() {
                 @Override
                 public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
+                    ArrayList<UserModel> lastModel = modelList;
                     modelList.clear();
                     Iterable<DataSnapshot> children = dataSnapshot.getChildren();
                     Iterator<DataSnapshot> iterator = children.iterator();
-                    while(iterator.hasNext())
-                    {
+                    while(iterator.hasNext()) {
                         DataSnapshot next = iterator.next();
-                        if (next.child("to").getValue().toString().equals(getCurrentUser()) && next.child("accepted").getValue().toString().equals("yes")) {
-                            //pingnodes.add(next.getKey());
-                            getDatabaseReference().child("users").child(next.child("from_uid").getValue().toString()).addListenerForSingleValueEvent(new ValueEventListener() {
-                                @Override
-                                public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
-                                    String prof_img_url = dataSnapshot.child("prof_img_url").getValue().toString();
-                                    String uid = dataSnapshot.getKey();
-                                    modelList.add(new UserModel(next.child("from").getValue().toString(), "", prof_img_url,uid));
-                                    mAdapter.updateList(modelList);
-                                }
+                        try {
+                            if (next.child("to").getValue().toString().equals(getCurrentUser()) && next.child("accepted").getValue().toString().equals("yes")) {
+                                //pingnodes.add(next.getKey());
+                                getDatabaseReference().child("users").child(next.child("from_uid").getValue().toString()).addListenerForSingleValueEvent(new ValueEventListener() {
+                                    @Override
+                                    public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
+                                        String prof_img_url = dataSnapshot.child("prof_img_url").getValue().toString();
+                                        String uid = dataSnapshot.getKey();
+                                        modelList.add(new UserModel(next.child("from").getValue().toString(), "", prof_img_url, uid));
+                                        mAdapter.updateList(modelList);
+                                    }
 
-                                @Override
-                                public void onCancelled(@NonNull DatabaseError databaseError) {
+                                    @Override
+                                    public void onCancelled(@NonNull DatabaseError databaseError) {
 
-                                }
-                            });
+                                    }
+                                });
+                            }
+                            else if (next.child("from").getValue().toString().equals(getCurrentUser()) && next.child("accepted").getValue().toString().equals("yes")) {
+                                getDatabaseReference().child("users").child(next.child("to_uid").getValue().toString()).addListenerForSingleValueEvent(new ValueEventListener() {
+                                    @Override
+                                    public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
+                                        String prof_img_url = dataSnapshot.child("prof_img_url").getValue().toString();
+                                        String uid = dataSnapshot.getKey();
+                                        modelList.add(new UserModel(next.child("to").getValue().toString(), "", prof_img_url, uid));
+                                        mAdapter.updateList(modelList);
+                                    }
+
+                                    @Override
+                                    public void onCancelled(@NonNull DatabaseError databaseError) {
+
+                                    }
+                                });
+                            }
                         }
-                        else if(next.child("from").getValue().toString().equals(getCurrentUser()) && next.child("accepted").getValue().toString().equals("yes")){
-                            getDatabaseReference().child("users").child(next.child("to_uid").getValue().toString()).addListenerForSingleValueEvent(new ValueEventListener() {
-                                @Override
-                                public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
-                                    String prof_img_url = dataSnapshot.child("prof_img_url").getValue().toString();
-                                    String uid = dataSnapshot.getKey();
-                                    modelList.add(new UserModel(next.child("to").getValue().toString(), "", prof_img_url,uid));
-                                    mAdapter.updateList(modelList);
-                                }
-
-                                @Override
-                                public void onCancelled(@NonNull DatabaseError databaseError) {
-
-                                }
-                            });
+                        catch (NullPointerException ex){
+                            ex.printStackTrace();
+                            Log.e("Icebreaker","Async read error occured. Attempting to recover.");
+                            mAdapter.updateList(lastModel);
                         }
                     }
 

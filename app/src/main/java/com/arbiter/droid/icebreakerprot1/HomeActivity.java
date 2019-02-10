@@ -1,18 +1,26 @@
 package com.arbiter.droid.icebreakerprot1;
+import android.app.Activity;
 import android.content.Intent;
+import android.location.Location;
 import android.os.Bundle;
 import android.os.Handler;
 import android.view.KeyEvent;
 import android.view.MenuItem;
 import android.widget.Toast;
 
+import com.google.android.gms.location.FusedLocationProviderClient;
+import com.google.android.gms.location.LocationServices;
 import com.google.android.gms.tasks.OnCompleteListener;
+import com.google.android.gms.tasks.OnSuccessListener;
 import com.google.android.gms.tasks.Task;
 import com.google.android.material.bottomnavigation.BottomNavigationView;
+import com.google.firebase.database.DatabaseReference;
 import com.google.firebase.iid.FirebaseInstanceId;
 import com.google.firebase.iid.InstanceIdResult;
 
 import org.greenrobot.eventbus.EventBus;
+
+import java.util.concurrent.TimeUnit;
 
 import androidx.annotation.NonNull;
 import androidx.appcompat.app.AppCompatActivity;
@@ -21,6 +29,8 @@ import androidx.core.view.GravityCompat;
 import androidx.drawerlayout.widget.DrawerLayout;
 import androidx.fragment.app.Fragment;
 
+import static com.arbiter.droid.icebreakerprot1.Common.curr_user_lat;
+import static com.arbiter.droid.icebreakerprot1.Common.curr_user_long;
 import static com.arbiter.droid.icebreakerprot1.Common.getCurrentUser;
 import static com.arbiter.droid.icebreakerprot1.Common.getDatabaseReference;
 import static com.arbiter.droid.icebreakerprot1.Common.getPreference;
@@ -29,6 +39,7 @@ import static com.arbiter.droid.icebreakerprot1.Common.user_viewer_mode;
 
 public class HomeActivity extends AppCompatActivity {
 
+    private FusedLocationProviderClient fusedLocationProviderClient;
     private Toolbar mToolbarMain;
     private BottomNavigationView mBottomNavigationView;
     boolean doubleBackToExitPressedOnce = false;
@@ -60,10 +71,42 @@ public class HomeActivity extends AppCompatActivity {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_home);
+        //startActivity(new Intent(this,VenueMenuActivity.class));
+        //finish();
+        Activity currentActivity = this;
+        fusedLocationProviderClient=LocationServices.getFusedLocationProviderClient(this);
         setCurrentUser(getPreference("saved_name"));
         mToolbarMain = findViewById(R.id.home_activity_toolbar);
         changeTitle(R.string.app_name);
-
+        Handler locationHandler = new Handler();
+        locationHandler.postDelayed(new Runnable() {
+            @Override
+            public void run() {
+                try {
+                    fusedLocationProviderClient.getLastLocation().addOnSuccessListener(currentActivity, new OnSuccessListener<Location>() {
+                        @Override
+                        public void onSuccess(Location location) {
+                            if(location==null)
+                                Toast.makeText(currentActivity, "Please enable location and restart", Toast.LENGTH_SHORT).show();
+                            else {
+                                double latitude = location.getLatitude();
+                                curr_user_lat = latitude;
+                                double longitude = location.getLongitude();
+                                curr_user_long = longitude;
+                                long timestamp = TimeUnit.MILLISECONDS.toSeconds(System.currentTimeMillis());
+                                DatabaseReference locationNode = getDatabaseReference().child("users").child(getPreference("saved_uid")).child("location");
+                                locationNode.child("latitude").setValue(latitude);
+                                locationNode.child("longitude").setValue(longitude);
+                                locationNode.child("timestamp").setValue(timestamp);
+                            }
+                        }
+                    });
+                }catch (SecurityException ex){
+                    ex.printStackTrace();
+                }
+                locationHandler.postDelayed(this,60000);
+            }
+        },1000);
         mToolbarMain.inflateMenu(R.menu.menu_home_activity);
 
         mToolbarMain.setOnMenuItemClickListener(
@@ -78,6 +121,10 @@ public class HomeActivity extends AppCompatActivity {
                             case R.id.home_menu_social:
                                 loadFragment(new SocialFragment());
                                 changeTitle(R.string.social);
+                                return true;
+                            case R.id.order_menu_item:
+                                loadFragment(new OrderRecyclerViewFragment());
+                                changeTitle(R.string.orders);
                                 return true;
                         }
                         return false;

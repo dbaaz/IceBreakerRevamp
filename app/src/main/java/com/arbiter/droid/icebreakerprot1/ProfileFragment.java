@@ -83,6 +83,7 @@ public class ProfileFragment extends Fragment {
                 }
                 mProfileImagePager = view.findViewById(R.id.pager_profile_images);
                 mProfileImageAdapter.setImageList(url_array);
+                mProfileImageAdapter.setUid(getPreference("saved_uid"));
                 mProfileImagePager.setAdapter(mProfileImageAdapter);
             }
 

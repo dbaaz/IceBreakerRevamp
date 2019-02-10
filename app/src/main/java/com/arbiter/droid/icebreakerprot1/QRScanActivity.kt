@@ -2,6 +2,7 @@ package com.arbiter.droid.icebreakerprot1
 
 import android.content.Intent
 import android.os.Bundle
+import android.util.Log
 import androidx.appcompat.app.AppCompatActivity
 import androidx.appcompat.widget.Toolbar
 import com.arbiter.droid.icebreakerprot1.Common.getDatabaseReference
@@ -33,7 +34,35 @@ class QRScanActivity : AppCompatActivity() {
                 .subscribe(
                         { barcode ->
                             val barCodeValue = barcode.displayValue
-                            if (barCodeValue.contains("icebreaker://pubs/"))
+                            if(barCodeValue.contains("icebreaker://pubs/") && barCodeValue.contains("tables")){
+                                val value_array = barCodeValue.split("/")
+                                val pubId = value_array[3]
+                                val tableId = value_array[5]
+                                getDatabaseReference().child("pubs").addListenerForSingleValueEvent(object : ValueEventListener {
+                                    override fun onDataChange(p0: DataSnapshot) {
+                                        val pubList = p0.children
+                                        val iterator = pubList.iterator()
+                                        while(iterator.hasNext())
+                                        {
+                                            Log.v("myapp","pubid"+pubId)
+                                            Log.v("myapp","tableid"+tableId)
+                                            val pubNode = iterator.next()
+                                            if(pubId.equals(pubNode.child("qr_id").getValue().toString()))
+                                            {
+                                                val intent = Intent(this@QRScanActivity, VenueMenuActivity::class.java)
+                                                intent.putExtra("name",pubNode.child("name").getValue().toString())
+                                                intent.putExtra("tableno",tableId)
+                                                startActivity(intent)
+                                            }
+                                        }
+                                    }
+
+                                    override fun onCancelled(p0: DatabaseError) {
+                                        TODO("not implemented") //To change body of created functions use File | Settings | File Templates.
+                                    }
+                                })
+                            }
+                            else if (barCodeValue.contains("icebreaker://pubs/"))
                             {
                                 val pubId = barCodeValue.substring(barCodeValue.lastIndexOf('/')+1,barCodeValue.length);
                                 getDatabaseReference().child("pubs").addListenerForSingleValueEvent(object : ValueEventListener {

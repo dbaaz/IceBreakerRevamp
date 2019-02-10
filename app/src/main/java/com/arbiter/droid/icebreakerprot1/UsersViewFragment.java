@@ -20,6 +20,7 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
+import java.util.concurrent.TimeUnit;
 import java.util.function.LongFunction;
 
 
@@ -48,8 +49,12 @@ import androidx.annotation.Nullable;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
+import static com.arbiter.droid.icebreakerprot1.Common.curr_user_lat;
+import static com.arbiter.droid.icebreakerprot1.Common.curr_user_long;
+import static com.arbiter.droid.icebreakerprot1.Common.getCoordDistance;
 import static com.arbiter.droid.icebreakerprot1.Common.getCurrentUser;
 import static com.arbiter.droid.icebreakerprot1.Common.getDatabaseReference;
+import static com.arbiter.droid.icebreakerprot1.Common.getPreference;
 import static com.arbiter.droid.icebreakerprot1.Common.removeValueEventListener;
 import static com.arbiter.droid.icebreakerprot1.Common.user_viewer_mode;
 
@@ -153,15 +158,28 @@ public class UsersViewFragment extends Fragment {
             ValueEventListener valueEventListener = getDatabaseReference().child("users").addValueEventListener(new ValueEventListener() {
                 @Override
                 public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
+                    ArrayList<UserModel> lastModel = modelList;
+                    DatabaseReference currUserRef = getDatabaseReference().child("users").child(getPreference("saved_uid")).child("location");
                     modelList.clear();
                     Iterable<DataSnapshot> children = dataSnapshot.getChildren();
                     Iterator<DataSnapshot> iterator = children.iterator();
-                    while (iterator.hasNext()) {
-                        DataSnapshot next = iterator.next();
-                        String name_read = next.child("name").getValue().toString();
-                        String prof_url = next.child("prof_img_url").getValue().toString();
-                        if (!getCurrentUser().equals(name_read))
-                            modelList.add(new UserModel(name_read, "", prof_url,next.getKey()));
+                    try {
+                        while (iterator.hasNext()) {
+                            DataSnapshot next = iterator.next();
+                            String name_read = next.child("name").getValue().toString();
+                            String prof_url = next.child("prof_img_url").getValue().toString();
+                            double latitude = Double.parseDouble(next.child("location").child("latitude").getValue().toString());
+                            double longitude = Double.parseDouble(next.child("location").child("longitude").getValue().toString());
+                            long timestamp = Long.parseLong(next.child("location").child("timestamp").getValue().toString());
+                            long currentTimeStamp = TimeUnit.MILLISECONDS.toSeconds(System.currentTimeMillis());
+                            if (!getCurrentUser().equals(name_read) && getCoordDistance(curr_user_lat,curr_user_long,latitude,longitude) < 1 && ((currentTimeStamp-timestamp)<300))
+                                modelList.add(new UserModel(name_read, "", prof_url, next.getKey()));
+                        }
+                    }
+                    catch (NullPointerException ex){
+                        ex.printStackTrace();
+                        Log.e("Icebreaker","Async read error occured. Attempting to recover.");
+                        mAdapter.updateList(lastModel);
                     }
                     mAdapter.updateList(modelList);
                     image_unload_count=modelList.size();
